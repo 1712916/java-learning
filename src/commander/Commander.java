@@ -3,63 +3,62 @@ package commander;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.Comparator;
-import java.util.HashMap;
+import java.util.Arrays;
 import java.util.Map;
-import java.util.function.Function;
-
+import java.util.Optional;
+import java.util.function.Supplier;
 
 public class Commander {
-    static final String EXIT = "exit";
-    static final String CLEAR = "clear";
-    static final String HELP = "help";
-    static final String PRINT = "print";
-    static final String SUM = "sum";
-    private final Map<String, Function<Object, Processor>> commandAction = new HashMap<>();
 
-    private Commander() {
+    private Map<String, Supplier<Processor>> commandAction;
+
+    private Commander() {}
+
+    public static void main(String[] args) {
+        Commander commander = CommanderBuilder
+                .create()
+                .withCommand(Command.CLEAR.command, ClearProcessor::new)
+                .withCommand(Command.EXIT.command, ExitProcessor::new)
+                .withCommand(Command.HELP.command, () -> param -> Arrays
+                        .stream(Command.values())
+                        .toList()
+                        .stream()
+                        .forEach(entry -> println(entry.command)))
+                .withCommand(Command.PRINT.command, PrintProcessor::new)
+                .withCommand(Command.SUM.command, SumProcessor::new)
+                .build();
+
+        commander.readLoop();
     }
 
     public static Commander createCommander() {
-        Commander commander = new Commander();
-        commander.initActions();
-        return commander;
+        return new Commander();
     }
 
-    void initActions() {
-        commandAction.put(CLEAR, (o) -> new ClearProcessor());
-        commandAction.put(EXIT, (o) -> new ExitProcessor());
-        commandAction.put(HELP, (o) -> (Processor) param -> commandAction.entrySet().stream().sorted(Comparator.comparing(Map.Entry::getKey)).forEach(entry -> println(entry.getKey())));
-        commandAction.put(PRINT, (o) -> new PrintProcessor());
-        commandAction.put(SUM, (o) -> new SumProcessor());
+    private static void println(String output) {
+        System.out.println("Commander: " + output);
     }
 
-    public void clearScreen() {
-        System.out.println("TODO: Clear screen");
-
+    void setCommandActions(Map<String, Supplier<Processor>> commandAction) {
+        this.commandAction = commandAction;
     }
 
-    public void readLoop() throws IOException {
-        // Enter data using BufferReader
+    public void readLoop() {
         BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
 
         while (true) {
+            System.out.print("input: ");
             try {
-                // Reading data using readLine
-                String name = reader.readLine();
+                String name    = reader.readLine();
                 String command = name.split(" ")[0];
 
-                if (commandAction.containsKey(command)) {
-                    final Processor process = commandAction.get(command).apply(0);
+                getProcessor(command)
+                        .map(Supplier::get)
+                        .ifPresentOrElse(processor -> processor.execute(name.replaceFirst(command, "").trim()), () -> {
+                            println("Command not found");
+                            println("Use help to see available commands");
+                        });
 
-                    //get all string after the command
-                    final String args = name.replaceFirst(command, "").trim();
-
-                    process.execute(args);
-                } else {
-                    println("Command not found");
-                    println("Use help to see available commands");
-                }
             } catch (IOException e) {
                 e.printStackTrace();
             } catch (ExitCommandException e) {
@@ -68,8 +67,11 @@ public class Commander {
         }
     }
 
-    private void println(String output) {
-        System.out.println("Commander: " + output);
+    public Optional<Supplier<Processor>> getProcessor(String command) {
+        return Optional.ofNullable(commandAction.get(command));
     }
 
+    void addNewAction(String command, Supplier<Processor> action) {
+        commandAction.put(command, action);
+    }
 }
