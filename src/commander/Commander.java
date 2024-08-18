@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Supplier;
@@ -12,7 +13,16 @@ public class Commander {
 
     private Map<String, Supplier<Processor>> commandAction;
 
-    private Commander() {}
+    private BufferedReader reader;
+
+      Commander(
+            Map<String, Supplier<Processor>> commandAction,
+            BufferedReader reader
+    ) {
+        this.commandAction = commandAction;
+        this.reader = reader;
+    }
+
 
     public static void main(String[] args) {
         Commander commander = CommanderBuilder
@@ -28,15 +38,21 @@ public class Commander {
                 .withCommand(Command.SUM.command, SumProcessor::new)
                 .build();
 
-        commander.readLoop();
-    }
+        BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
 
-    public static Commander createCommander() {
-        return new Commander();
+        commander.readLoop();
     }
 
     private static void println(String output) {
         System.out.println("Commander: " + output);
+    }
+
+    public void setReader(BufferedReader reader) {
+        this.reader = reader;
+    }
+
+    public Map<String, Supplier<Processor>> getCommandActions() {
+        return commandAction;
     }
 
     void setCommandActions(Map<String, Supplier<Processor>> commandAction) {
@@ -44,8 +60,6 @@ public class Commander {
     }
 
     public void readLoop() {
-        BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
-
         while (true) {
             System.out.print("input: ");
             try {
@@ -72,6 +86,10 @@ public class Commander {
     }
 
     void addNewAction(String command, Supplier<Processor> action) {
+        if (commandAction == null) {
+            commandAction = new HashMap<String, Supplier<Processor>>();
+        }
+
         commandAction.put(command, action);
     }
 }

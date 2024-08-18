@@ -27,3 +27,16 @@ bin/
 
 ### Mac OS ###
 .DS_Store
+java-learning.iml
+.idea/uiDesigner.xml
+.idea/codeStyles/codeStyleConfig.xml
+.idea/libraries/mockito_core.xml
+.idea/libraries/mockito_core_3124.xml
+lib/byte-buddy-1.11.13.jar
+lib/byte-buddy-1.6.5.jar
+lib/byte-buddy-agent-1.11.13.jar
+lib/byte-buddy-agent-1.6.5.jar
+lib/mockito-core-2.6.9.jar
+lib/mockito-core-3.12.4.jar
+lib/objenesis-2.5.jar
+lib/objenesis-3.2.jar
