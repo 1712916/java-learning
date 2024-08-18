@@ -2,8 +2,6 @@ package commander;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -23,26 +21,6 @@ public class Commander {
         this.reader = reader;
     }
 
-
-    public static void main(String[] args) {
-        Commander commander = CommanderBuilder
-                .create()
-                .withCommand(Command.CLEAR.command, ClearProcessor::new)
-                .withCommand(Command.EXIT.command, ExitProcessor::new)
-                .withCommand(Command.HELP.command, () -> param -> Arrays
-                        .stream(Command.values())
-                        .toList()
-                        .stream()
-                        .forEach(entry -> println(entry.command)))
-                .withCommand(Command.PRINT.command, PrintProcessor::new)
-                .withCommand(Command.SUM.command, SumProcessor::new)
-                .build();
-
-        BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
-
-        commander.readLoop();
-    }
-
     private static void println(String output) {
         System.out.println("Commander: " + output);
     }
@@ -60,6 +38,12 @@ public class Commander {
     }
 
     public void readLoop() {
+        if (commandAction.isEmpty()) {
+            println("No commands available");
+
+            return;
+        }
+
         while (true) {
             System.out.print("input: ");
             try {
@@ -93,3 +77,4 @@ public class Commander {
         commandAction.put(command, action);
     }
 }
+
