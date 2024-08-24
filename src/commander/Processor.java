@@ -1,6 +1,6 @@
 package commander;
 
-interface Processor {
+public interface Processor {
     void execute(String param);
 }
 
@@ -11,16 +11,6 @@ class ClearProcessor implements Processor {
     @Override
     public void execute(String param) {
         System.out.println("Clearing screen...");
-    }
-}
-
-class ExitProcessor implements Processor {
-    public ExitProcessor() {}
-
-    @Override
-    public void execute(String param) {
-        System.out.println("Exiting...");
-        throw new ExitCommandException();
     }
 }
 

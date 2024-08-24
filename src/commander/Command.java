@@ -1,6 +1,6 @@
 package commander;
 
-enum Command {
+public enum Command {
     CLEAR("clear"), EXIT("exit"), HELP("help"), PRINT("print"), SUM("sum");
 
     public final String command;

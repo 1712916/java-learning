@@ -28,7 +28,7 @@ public class User {
         return Optional.ofNullable((T) properties.get(key));
     }
 
-    static class UserBuilder {
+    public static class UserBuilder {
         private final Map<String, Object> properties = new HashMap<>();
 
         public User build() {
