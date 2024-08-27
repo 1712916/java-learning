@@ -60,10 +60,42 @@ abstract class AuthenRequest {
     }
 }
 
-class LoginRequest extends AuthenRequest {}
+class LoginRequest extends AuthenRequest {
+    public String getAccount() {
+        return getProperties().get("account");
+    }
+
+    public String getPassword() {
+        return getProperties().get("password");
+    }
+
+    public String getDeviceId() {
+        return getProperties().get("deviceId");
+    }
+
+    public void setAccount(String account) {
+        getProperties().put("account", account);
+    }
+
+    public void setPassword(String password) {
+        getProperties().put("password", password);
+    }
+
+    public void setDeviceId(String deviceId) {
+        getProperties().put("deviceId", deviceId);
+    }
+}
 
 class RegisterRequest extends AuthenRequest {}
 
 abstract class ChangePasswordRequest extends AuthenRequest {}
 
-abstract class LogoutRequest extends AuthenRequest {}
+  class LogoutRequest extends AuthenRequest {
+    String getAccount() {
+        return getProperties().get("account");
+    }
+
+    String getDeviceId() {
+        return getProperties().get("deviceId");
+    }
+  }

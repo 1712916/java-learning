@@ -16,7 +16,7 @@ public class AccountAuthentication implements  Authentication {
             return response;
         }
 
-        String account = request.getProperties().get("account");
+        String account = request.getAccount();
 
         Optional<User> existUser = AuthenticationTest.findByAccount(account);
 
@@ -28,7 +28,7 @@ public class AccountAuthentication implements  Authentication {
         }
 
 
-        String password = request.getProperties().get("password");
+        String password = request.getPassword();
         if (existUser.filter(user -> user.getPassword().orElse("_").equals(password)).isEmpty()) {
             LoginResponse response = new LoginResponse();
             response.setStatus(AuthenStatus.FAIL);
@@ -36,8 +36,14 @@ public class AccountAuthentication implements  Authentication {
             return response;
         }
 
-        String deviceId = request.getProperties().get("deviceId");
+        String deviceId = request.getDeviceId();
 
+        if (deviceId == null || deviceId.isEmpty()) {
+            LoginResponse response = new LoginResponse();
+            response.setStatus(AuthenStatus.FAIL);
+            response.setMessage("Device id is required");
+            return response;
+        }
 
         if (AuthenticationTest.isLogin(account)) {
             if (AuthenticationTest.compareDeviceIds(account, deviceId)){
@@ -64,9 +70,8 @@ public class AccountAuthentication implements  Authentication {
 
     @Override public LogoutResponse logout(LogoutRequest request) {
 
-
-        String account = request.getProperties().get("account");
-        String deviceId = request.getProperties().get("deviceId");
+        String account = request.getAccount();
+        String deviceId = request.getDeviceId();
 
         if (!AuthenticationTest.isLogin(account)) {
             LogoutResponse response = new LogoutResponse();

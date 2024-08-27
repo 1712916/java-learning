@@ -7,9 +7,6 @@ import java.util.*;
 import java.util.function.Supplier;
 
 public class AuthenticationTest {
-
-
-
     static private List<User> users          = new ArrayList<>();
 
     static void addUser(User user) {
@@ -17,7 +14,7 @@ public class AuthenticationTest {
     }
 
     static Optional<User> findByAccount(String account) {
-        showAllUsers();
+        //showAllUsers();
         return users.stream()
                 .filter(user -> user.getAccount().isPresent() && user.getAccount().get().equals(account))
                 .findFirst();
@@ -57,7 +54,9 @@ public class AuthenticationTest {
     public static void logout(String account, String deviceId) {
         if (isLogin(account) && compareDeviceIds(account, deviceId)) {
             loginWithDeviceId.remove(account);
+            return;
         }
+
         throw new RuntimeException("Logout fail");
     }
 
@@ -71,30 +70,8 @@ public class AuthenticationTest {
                     @Override public Processor get() {
                         return  new Processor() {
                             @Override public void execute(String param) {
-                                LoginRequest loginRequest = new LoginRequest();
-                                //param format: -a bossxomlut -pw password -dv device123
-                                List<String> params = Arrays.asList(param.split(" "));
-                                Map<String, String> properties = new HashMap<>();
+                                LoginRequest loginRequest = new LoginRequestFromQuery().toObject(Query.fromString(param, ","));
 
-                                for (int i = 0; i < params.size(); i++) {
-                                    String data = params.get(i);
-                                    if (data.startsWith("-")) {
-                                        properties.put(data, params.get(i + 1));
-                                    }
-                                }
-
-
-                                String account = properties.get("-a");
-                                String password = properties.get("-pw");
-                                String deviceId = properties.get("-dv");
-
-
-                                System.out.println("account: " + account);
-                                System.out.println("password: " + password);
-                                System.out.println("deviceId: " + deviceId);
-
-                                loginRequest.setProperties(Map.of("account", account, "password", password,
-                                        "deviceId", deviceId));
                                 LoginResponse loginResponse = authentication.login(loginRequest);
                                 switch (loginResponse.getStatus()) {
                                     case SUCCESS:
@@ -112,15 +89,8 @@ public class AuthenticationTest {
                     @Override public Processor get() {
                         return  new Processor() {
                             @Override public void execute(String param) {
-                                RegisterRequest registerRequest = new RegisterRequest();
-                                //param format: -a bossxomlut -pw password
-                                String account = "";
-                                String password = "";
+                                RegisterRequest registerRequest = new RegisterRequestFromQuery().toObject(Query.fromString(param, ","));
 
-                                account = param.substring(param.indexOf("-a") + 2, param.indexOf("-pw") - 1);
-                                password = param.substring(param.indexOf("-pw") + 3);
-
-                                registerRequest.setProperties(Map.of("account", account, "password", password));
                                 RegisterResponse registerResponse = authentication.register(registerRequest);
                                 switch (registerResponse.getStatus()) {
                                     case SUCCESS:
@@ -128,6 +98,25 @@ public class AuthenticationTest {
                                         break;
                                     case FAIL:
                                         System.out.println("Register fail: " + registerResponse.getMessage());
+                                        break;
+                                }
+                            }
+                        };
+                    }
+                })
+                .withCommand(AuthenCommander.LOGOUT.command, new Supplier<Processor>() {
+                    @Override public Processor get() {
+                        return  new Processor() {
+                            @Override public void execute(String param) {
+                                LogoutRequest logoutRequest = new LogoutRequestFromQuery().toObject(Query.fromString(param, ","));
+
+                                LogoutResponse logoutResponse = authentication.logout(logoutRequest);
+                                switch (logoutResponse.getStatus()) {
+                                    case SUCCESS:
+                                        System.out.println("Logout success");
+                                        break;
+                                    case FAIL:
+                                        System.out.println("Logout fail: " + logoutResponse.getMessage());
                                         break;
                                 }
                             }
